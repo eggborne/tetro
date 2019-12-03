@@ -901,3 +901,745 @@ function changeMusic(newSelection) {
 
     BGMusic.normal.play();
 }
+
+function OptionsScreen() {
+    this.container = new PIXI.Container();
+    this.container.pivot.x = titleScreen.container.pivot.x;
+    this.container.pivot.y = titleScreen.container.pivot.y;
+    this.bg = new PIXI.Sprite(pixelText);
+    this.bg.tint = 0x000000;
+    this.bg.alpha = 0.95;
+    this.bg.width = titleScreen.bg.width;
+    this.bg.height = titleScreen.bg.height;
+    this.container.x = titleScreen.container.x;
+    this.container.y = titleScreen.container.y;
+  
+    this.elementWidth = this.bg.width - blockSize * 3;
+    this.elementHeight = this.bg.height / 13;
+    this.elementYSpace = this.elementHeight * 1.2;
+  
+    this.container.addChild(this.bg);
+    if (this.bg.width < miniBlockSize * 40) {
+      optionTextSize = miniBlockSize * 0.7;
+    } else {
+      optionTextSize = miniBlockSize;
+    }
+    this.border = new Border(
+      borders['fancy'],
+      mainBorderThickness,
+      this,
+      this.bg.width - miniBlockSize * 2,
+      window.innerHeight - miniBlockSize * 2,
+      miniBlockSize,
+      miniBlockSize
+    );
+    this.headerTextStyle = {
+      fontFamily: 'Press Start 2P',
+      fontSize: optionTextSize + 'px',
+      fill: '#99ddff',
+      leading: miniBlockSize / 2
+      // stroke : "#333333",
+      // strokeThickness : 2
+    };
+    this.onOffTextStyle = {
+      fontFamily: 'Press Start 2P',
+      fontSize: optionTextSize * 0.95 + 'px',
+      fill: '#ffffff'
+  
+      // align:'center',
+      // stroke : "#000000",
+      // strokeThickness : 1
+    };
+    this.startStyle = {
+      fontFamily: 'Press Start 2P',
+      fontSize: blockSize * 0.8 + 'px',
+      fill: '#ffffff'
+      // stroke : "#000000",
+      // strokeThickness : 1
+    };
+  
+    this.header = new TextButton(
+      this,
+      'OPTIONS',
+      'blue',
+      1,
+      this.startStyle,
+      blockSize,
+      miniBlockSize * 0.1
+    );
+    this.header.container.x = this.bg.width / 2 - this.header.container.width / 2;
+    this.header.container.y = this.header.container.height / 3;
+  
+    this.gridToggle = new ToggleBar(
+      this,
+      blockSize * 1.5,
+      this.elementYSpace * 1.5,
+      this.elementWidth,
+      this.elementHeight,
+      'GUIDELINES',
+      'ON',
+      'OFF',
+      function() {
+        pieceGrid = true;
+        gridLines.alpha = 1;
+      },
+      function() {
+        pieceGrid = false;
+        gridLines.alpha = 0;
+      },
+      pieceGrid
+    );
+  
+    // this.container.addChild(this.gridToggle.container)
+  
+    this.ghostToggle = new ToggleBar(
+      this,
+      blockSize * 1.5,
+      this.elementYSpace * 1.5,
+      this.elementWidth,
+      this.elementHeight,
+      'GHOST PIECE',
+      'ON',
+      'OFF',
+      function() {
+        ghostPiece = true;
+      },
+      function() {
+        ghostPiece = false;
+        if (atBat && atBat.ghost) {
+          atBat.ghost.container.destroy();
+          atBat.ghost = undefined;
+        }
+      },
+      ghostPiece
+    );
+  
+    this.container.addChild(this.ghostToggle.container);
+  
+    this.speedToggleBacking = new PIXI.Sprite(pixelText);
+    this.speedToggleBacking.tint = 0x222222;
+    this.speedToggleBacking.anchor.x = 0;
+    this.speedToggleBacking.width = this.elementWidth;
+    this.speedToggleBacking.height = this.elementHeight;
+    this.speedToggleBacking.x = this.gridToggle.backing.x;
+    this.speedToggleBacking.y = this.ghostToggle.backing.y + this.elementYSpace;
+    this.speedToggleText = new PIXI.Text(
+      'FORCED DROP SPEED',
+      this.headerTextStyle
+    );
+    if (this.speedToggleText.width >= this.bg.width / 4) {
+      this.speedToggleText.text = 'FORCED DROP\rSPEED';
+      this.speedToggleText.y -= this.speedToggleText.height / 4;
+    }
+    this.speedToggleText.anchor.x = 0;
+    this.speedToggleText.x = this.gridToggle.labelText.x;
+    this.speedToggleText.y =
+      this.speedToggleBacking.y +
+      this.speedToggleBacking.height / 2 -
+      this.speedToggleText.height / 2;
+    this.speedToggleArrowRight = new PIXI.Sprite(backArrowText);
+    this.speedToggleArrowLeft = new PIXI.Sprite(backArrowText);
+  
+    this.speedToggleArrowLeft.tint = this.speedToggleArrowRight.tint = 0xeeeeee;
+    this.speedToggleArrowLeft.width = this.speedToggleArrowRight.width = this.speedToggleArrowLeft.height = this.speedToggleArrowRight.height =
+      this.elementHeight * 0.4;
+    this.speedToggleArrowRight.scale.x *= -1;
+    this.speedToggleArrowRight.x =
+      this.speedToggleBacking.x +
+      this.speedToggleBacking.width -
+      this.speedToggleArrowLeft.width / 2.5;
+    this.speedToggleArrowRight.y = this.speedToggleArrowLeft.y =
+      this.speedToggleBacking.y +
+      this.speedToggleBacking.height / 2 -
+      this.speedToggleArrowLeft.height / 2;
+    this.speedToggleArrowLeft.interactive = this.speedToggleArrowRight.interactive = true;
+  
+    this.speedText = new PIXI.Text('INSTANT', this.onOffTextStyle);
+    this.speedText.interactive = true;
+    this.speedText.anchor.x = 0.5;
+    this.speedToggleArrowLeft.affectee = this.speedToggleArrowRight.affectee = this.speedText;
+    this.speedText.x =
+      this.speedToggleArrowRight.x -
+      this.speedToggleArrowRight.width -
+      this.speedText.width / 2 -
+      miniBlockSize * 0.5;
+    this.speedText.y =
+      this.speedToggleArrowLeft.y +
+      this.speedToggleArrowLeft.height / 2 -
+      this.speedText.height / 2;
+    this.speedToggleArrowLeft.x =
+      this.speedText.x -
+      this.speedText.width / 2 -
+      this.speedToggleArrowLeft.width -
+      miniBlockSize * 0.5;
+    this.container.addChild(this.speedToggleBacking);
+    this.container.addChild(this.speedToggleText);
+    this.container.addChild(this.speedToggleArrowLeft);
+    this.container.addChild(this.speedToggleArrowRight);
+    this.container.addChild(this.speedText);
+    this.speedToggleArrowLeft.on('pointerdown', function() {
+      forcedFallRate++;
+      if (forcedFallRate === 3) {
+        forcedFallRate = 0;
+      }
+      this.affectee.text = fallRates[forcedFallRate];
+    });
+    this.speedToggleArrowRight.on('pointerdown', function() {
+      forcedFallRate--;
+      if (forcedFallRate === -1) {
+        forcedFallRate = 2;
+      }
+  
+      this.affectee.text = fallRates[forcedFallRate];
+    });
+    this.speedText.on('pointerdown', function() {
+      forcedFallRate--;
+      if (forcedFallRate === -1) {
+        forcedFallRate = 2;
+      }
+  
+      this.text = fallRates[forcedFallRate];
+    });
+  
+    this.sfxToggle = new ToggleBar(
+      this,
+      blockSize * 1.5,
+      this.speedToggleBacking.y + this.elementYSpace,
+      this.elementWidth,
+      this.elementHeight,
+      'SOUND FX',
+      'ON',
+      'OFF',
+      function() {
+        SFXOn = true;
+      },
+      function() {
+        SFXOn = false;
+      },
+      SFXOn
+    );
+  
+    this.container.addChild(this.sfxToggle.container);
+  
+    this.DASTimeBacking = new PIXI.Sprite(pixelText);
+    this.DASTimeBacking.tint = 0x222222;
+    this.DASTimeBacking.anchor.x = 0;
+    this.DASTimeBacking.width = this.elementWidth;
+    this.DASTimeBacking.height = this.elementHeight;
+    this.DASTimeBacking.x = this.gridToggle.backing.x;
+    this.DASTimeBacking.y = this.speedToggleBacking.y + this.elementYSpace * 2;
+    this.DASTimeText = new PIXI.Text('AUTO SHIFT DELAY', this.headerTextStyle);
+    if (this.DASTimeText.width >= this.bg.width / 2) {
+      this.DASTimeText.text = 'AUTO SHIFT\rDELAY';
+      this.DASTimeText.y -= this.DASTimeText.height / 4;
+    }
+    this.DASTimeText.anchor.x = 0;
+    this.DASTimeText.x = this.gridToggle.labelText.x;
+    this.DASTimeText.y =
+      this.DASTimeBacking.y +
+      this.DASTimeBacking.height / 2 -
+      this.DASTimeText.height / 2;
+    this.DASTimeArrowRight = new PIXI.Sprite(backArrowText);
+    this.DASTimeArrowLeft = new PIXI.Sprite(backArrowText);
+    this.DASTimeArrowLeft.tint = this.DASTimeArrowRight.tint = 0xeeeeee;
+    this.DASTimeArrowLeft.width = this.DASTimeArrowRight.width = this.DASTimeArrowLeft.height = this.DASTimeArrowRight.height =
+      this.elementHeight * 0.4;
+    this.DASTimeArrowRight.scale.x *= -1;
+    this.DASTimeArrowRight.x =
+      this.DASTimeBacking.x +
+      this.DASTimeBacking.width -
+      this.DASTimeArrowLeft.width / 2.5;
+    this.DASTimeArrowRight.y = this.DASTimeArrowLeft.y =
+      this.DASTimeBacking.y +
+      this.DASTimeBacking.height / 2 -
+      this.DASTimeArrowLeft.height / 2;
+    this.DASTimeArrowLeft.interactive = this.DASTimeArrowRight.interactive = true;
+  
+    this.DASTimeNumeral = new TextNumeral(
+      this.DASTimeArrowLeft.height * 0.8,
+      0,
+      this.DASTimeArrowLeft.y + this.DASTimeArrowLeft.height * 0.1,
+      DASTime,
+      2,
+      0xffffff
+    );
+    this.DASTimeNumeral.container.x =
+      this.DASTimeArrowRight.x -
+      this.DASTimeNumeral.container.width / 2 -
+      this.DASTimeArrowRight.width -
+      this.elementHeight / 1.6;
+    this.DASTimeArrowLeft.x =
+      this.DASTimeNumeral.container.x - this.elementHeight / 1.6;
+  
+    this.DASTimeArrowLeft.on('pointerdown', function() {
+      if (DASTime > 1) {
+        if (SFXOn) {
+          selectSound.play();
+        }
+        DASTime--;
+        optionsScreen.DASTimeNumeral.changeNumber(DASTime);
+      }
+    });
+    this.DASTimeArrowRight.on('pointerdown', function() {
+      if (DASTime < 36) {
+        if (SFXOn) {
+          selectSound.play();
+        }
+        DASTime++;
+        optionsScreen.DASTimeNumeral.changeNumber(DASTime);
+      }
+    });
+  
+    this.DASIntervalBacking = new PIXI.Sprite(pixelText);
+    this.DASIntervalBacking.tint = 0x222222;
+    this.DASIntervalBacking.anchor.x = 0;
+    this.DASIntervalBacking.width = this.elementWidth;
+    this.DASIntervalBacking.height = this.elementHeight;
+    this.DASIntervalBacking.x = this.gridToggle.backing.x;
+    this.DASIntervalBacking.y = this.DASTimeBacking.y + this.elementYSpace;
+    this.DASIntervalText = new PIXI.Text(
+      'AUTO SHIFT SPEED',
+      this.headerTextStyle
+    );
+    if (this.DASIntervalText.width >= this.bg.width / 2) {
+      this.DASIntervalText.text = 'AUTO SHIFT\rSPEED';
+      this.DASIntervalText.y -= this.DASIntervalText.height / 4;
+    }
+    this.DASIntervalText.anchor.x = 0;
+    this.DASIntervalText.x = this.gridToggle.labelText.x;
+    this.DASIntervalText.y =
+      this.DASIntervalBacking.y +
+      this.DASIntervalBacking.height / 2 -
+      this.DASIntervalText.height / 2;
+    this.DASIntervalArrowRight = new PIXI.Sprite(backArrowText);
+    this.DASIntervalArrowLeft = new PIXI.Sprite(backArrowText);
+    this.DASIntervalArrowLeft.tint = this.DASIntervalArrowRight.tint = 0xeeeeee;
+    this.DASIntervalArrowLeft.width = this.DASIntervalArrowRight.width = this.DASIntervalArrowLeft.height = this.DASIntervalArrowRight.height =
+      this.elementHeight * 0.4;
+    this.DASIntervalArrowRight.scale.x *= -1;
+    this.DASIntervalArrowRight.x =
+      this.DASIntervalBacking.x +
+      this.DASIntervalBacking.width -
+      this.DASIntervalArrowLeft.width / 2.5;
+    this.DASIntervalArrowRight.y = this.DASIntervalArrowLeft.y =
+      this.DASIntervalBacking.y +
+      this.DASIntervalBacking.height / 2 -
+      this.DASIntervalArrowLeft.height / 2;
+    this.DASIntervalArrowLeft.interactive = this.DASIntervalArrowRight.interactive = true;
+  
+    this.DASIntervalNumeral = new TextNumeral(
+      this.DASIntervalArrowLeft.height * 0.8,
+      0,
+      this.DASIntervalArrowLeft.y,
+      DASInterval,
+      2,
+      0xffffff
+    );
+    this.DASIntervalNumeral.container.x =
+      this.DASIntervalArrowRight.x -
+      this.DASIntervalNumeral.container.width / 2 -
+      this.DASIntervalArrowRight.width -
+      this.elementHeight / 1.6;
+    this.DASIntervalArrowLeft.x =
+      this.DASIntervalNumeral.container.x - this.elementHeight / 1.6;
+    this.DASIntervalArrowLeft.on('pointerdown', function() {
+      if (DASInterval > 1) {
+        if (SFXOn) {
+          selectSound.play();
+        }
+        DASInterval--;
+        optionsScreen.DASIntervalNumeral.changeNumber(DASInterval);
+      }
+    });
+    this.DASIntervalArrowRight.on('pointerdown', function() {
+      if (DASInterval < 36) {
+        if (SFXOn) {
+          selectSound.play();
+        }
+        DASInterval++;
+        optionsScreen.DASIntervalNumeral.changeNumber(DASInterval);
+      }
+    });
+    this.DASIntervalText.tint = this.DASTimeText.tint = 0x99aa99;
+  
+    this.DASControls = new PIXI.Container();
+    this.DASControls.addChild(this.DASTimeBacking);
+    this.DASControls.addChild(this.DASTimeText);
+    this.DASControls.addChild(this.DASTimeArrowLeft);
+    this.DASControls.addChild(this.DASTimeArrowRight);
+    this.DASControls.addChild(this.DASTimeNumeral.container);
+    this.DASControls.addChild(this.DASIntervalBacking);
+    this.DASControls.addChild(this.DASIntervalText);
+    this.DASControls.addChild(this.DASIntervalArrowLeft);
+    this.DASControls.addChild(this.DASIntervalArrowRight);
+    this.DASControls.addChild(this.DASIntervalNumeral.container);
+  
+    this.sensitivityXBacking = new PIXI.Sprite(pixelText);
+    this.sensitivityXBacking.tint = 0x222222;
+    this.sensitivityXBacking.anchor.x = 0;
+    this.sensitivityXBacking.width = this.elementWidth;
+    this.sensitivityXBacking.height = this.elementHeight;
+    this.sensitivityXBacking.x = this.gridToggle.backing.x;
+    this.sensitivityXBacking.y =
+      this.speedToggleBacking.y + this.elementYSpace * 2;
+    this.sensitivityXText = new PIXI.Text(
+      'HORIZ. DEAD ZONE SIZE',
+      this.headerTextStyle
+    );
+    if (this.sensitivityXText.width >= this.bg.width / 4) {
+      this.sensitivityXText.text = 'HORIZ. DEAD\rZONE SIZE';
+      this.sensitivityXText.y -= this.sensitivityXText.height / 4;
+    }
+    this.sensitivityXText.anchor.x = 0;
+    this.sensitivityXText.x = this.gridToggle.labelText.x;
+    this.sensitivityXText.y =
+      this.sensitivityXBacking.y +
+      this.sensitivityXBacking.height / 2 -
+      this.sensitivityXText.height / 2;
+    this.sensitivityXArrowRight = new PIXI.Sprite(backArrowText);
+    this.sensitivityXArrowLeft = new PIXI.Sprite(backArrowText);
+    this.sensitivityXArrowLeft.tint = this.sensitivityXArrowRight.tint = 0xeeeeee;
+    this.sensitivityXArrowLeft.width = this.sensitivityXArrowRight.width = this.sensitivityXArrowLeft.height = this.sensitivityXArrowRight.height =
+      this.elementHeight * 0.4;
+    this.sensitivityXArrowRight.scale.x *= -1;
+    this.sensitivityXArrowRight.x =
+      this.sensitivityXBacking.x +
+      this.sensitivityXBacking.width -
+      this.sensitivityXArrowLeft.width / 2.5;
+    this.sensitivityXArrowRight.y = this.sensitivityXArrowLeft.y =
+      this.sensitivityXBacking.y +
+      this.sensitivityXBacking.height / 2 -
+      this.sensitivityXArrowLeft.height / 2;
+    this.sensitivityXArrowLeft.interactive = this.sensitivityXArrowRight.interactive = true;
+    this.sensitivityXNumeral = new TextNumeral(
+      this.sensitivityXArrowLeft.height * 0.8,
+      0,
+      this.sensitivityXArrowLeft.y + this.sensitivityXArrowLeft.height * 0.1,
+      sensitivityX,
+      2,
+      0xffffff
+    );
+    this.sensitivityXNumeral.container.x =
+      this.sensitivityXArrowRight.x -
+      this.sensitivityXNumeral.container.width / 2 -
+      this.sensitivityXArrowRight.width -
+      this.elementHeight / 1.6;
+    this.sensitivityXArrowLeft.x =
+      this.sensitivityXNumeral.container.x - this.elementHeight / 1.6;
+  
+    this.sensitivityXArrowLeft.on('pointerdown', function() {
+      if (sensitivityX > 1) {
+        if (SFXOn) {
+          selectSound.play();
+        }
+        sensitivityX--;
+        dragDeadZoneX = (blockSize / 10) * sensitivityX;
+        optionsScreen.sensitivityXNumeral.changeNumber(sensitivityX);
+      }
+    });
+    this.sensitivityXArrowRight.on('pointerdown', function() {
+      if (sensitivityX < 36) {
+        if (SFXOn) {
+          selectSound.play();
+        }
+        sensitivityX++;
+        dragDeadZoneX = (blockSize / 10) * sensitivityX;
+        optionsScreen.sensitivityXNumeral.changeNumber(sensitivityX);
+      }
+    });
+    this.sensitivityYBacking = new PIXI.Sprite(pixelText);
+    this.sensitivityYBacking.tint = 0x222222;
+    this.sensitivityYBacking.anchor.x = 0;
+    this.sensitivityYBacking.width = this.elementWidth;
+    this.sensitivityYBacking.height = this.elementHeight;
+    this.sensitivityYBacking.x = this.gridToggle.backing.x;
+    this.sensitivityYBacking.y = this.sensitivityXBacking.y + this.elementYSpace;
+    this.sensitivityYText = new PIXI.Text(
+      'SWIPE TO DROP DISTANCE',
+      this.headerTextStyle
+    );
+    if (this.sensitivityYText.width >= this.bg.width / 4) {
+      this.sensitivityYText.text = 'SWIPE TO\rDROP DISTANCE';
+      this.sensitivityYText.y -= this.sensitivityYText.height / 4;
+    }
+    this.sensitivityYText.anchor.x = 0;
+    this.sensitivityYText.x = this.gridToggle.labelText.x;
+    this.sensitivityYText.y =
+      this.sensitivityYBacking.y +
+      this.sensitivityYBacking.height / 2 -
+      this.sensitivityYText.height / 2;
+    this.sensitivityYArrowRight = new PIXI.Sprite(backArrowText);
+    this.sensitivityYArrowLeft = new PIXI.Sprite(backArrowText);
+    this.sensitivityYArrowLeft.tint = this.sensitivityYArrowRight.tint = 0xeeeeee;
+    this.sensitivityYArrowLeft.width = this.sensitivityYArrowRight.width = this.sensitivityYArrowLeft.height = this.sensitivityYArrowRight.height =
+      this.elementHeight * 0.4;
+    this.sensitivityYArrowRight.scale.x *= -1;
+    this.sensitivityYArrowRight.x =
+      this.sensitivityYBacking.x +
+      this.sensitivityYBacking.width -
+      this.sensitivityYArrowLeft.width / 2.5;
+    this.sensitivityYArrowRight.y = this.sensitivityYArrowLeft.y =
+      this.sensitivityYBacking.y +
+      this.sensitivityYBacking.height / 2 -
+      this.sensitivityYArrowLeft.height / 2;
+    this.sensitivityYArrowLeft.interactive = this.sensitivityYArrowRight.interactive = true;
+  
+    this.sensitivityYNumeral = new TextNumeral(
+      this.sensitivityYArrowLeft.height * 0.8,
+      0,
+      this.sensitivityYArrowLeft.y + this.sensitivityYArrowLeft.height * 0.1,
+      sensitivityY,
+      2,
+      0xffffff
+    );
+    this.sensitivityYNumeral.container.x =
+      this.sensitivityYArrowRight.x -
+      this.sensitivityYNumeral.container.width / 2 -
+      this.sensitivityYArrowRight.width -
+      this.elementHeight / 1.6;
+    this.sensitivityYArrowLeft.x =
+      this.sensitivityYNumeral.container.x - this.elementHeight / 1.6;
+  
+    this.sensitivityYArrowLeft.on('pointerdown', function() {
+      if (sensitivityY > 1) {
+        if (SFXOn) {
+          selectSound.play();
+        }
+        sensitivityY--;
+        dropDragDistance = (blockSize / 5) * sensitivityY;
+        optionsScreen.sensitivityYNumeral.changeNumber(sensitivityY);
+      }
+    });
+    this.sensitivityYArrowRight.on('pointerdown', function() {
+      if (sensitivityY < 36) {
+        if (SFXOn) {
+          selectSound.play();
+        }
+        sensitivityY++;
+        dropDragDistance = (blockSize / 5) * sensitivityY;
+        optionsScreen.sensitivityYNumeral.changeNumber(sensitivityY);
+      }
+    });
+    this.sensitivityXText.tint = this.sensitivityYText.tint = 0xaaaa99;
+  
+    this.sensitivityControls = new PIXI.Container();
+    this.sensitivityControls.addChild(this.sensitivityXBacking);
+    this.sensitivityControls.addChild(this.sensitivityXText);
+    this.sensitivityControls.addChild(this.sensitivityXArrowLeft);
+    this.sensitivityControls.addChild(this.sensitivityXArrowRight);
+    this.sensitivityControls.addChild(this.sensitivityXNumeral.container);
+    this.sensitivityControls.addChild(this.sensitivityYBacking);
+    this.sensitivityControls.addChild(this.sensitivityYText);
+    this.sensitivityControls.addChild(this.sensitivityYArrowLeft);
+    this.sensitivityControls.addChild(this.sensitivityYArrowRight);
+    this.sensitivityControls.addChild(this.sensitivityYNumeral.container);
+  
+    if (isTouchDevice) {
+      this.container.addChild(this.sensitivityControls);
+    } else {
+      this.container.addChild(this.DASControls);
+    }
+  
+    this.okButton = new TextButton(
+      this,
+      'OK',
+      'fancy',
+      1,
+      this.startStyle,
+      blockSize * 4,
+      miniBlockSize * 0.5
+    );
+    this.okButton.container.x =
+      this.bg.x + this.bg.width / 2 - this.okButton.bg.width / 2;
+    this.okButton.container.y =
+      window.innerHeight - miniBlockSize * 3.75 - this.okButton.bg.height;
+    this.container.addChild(this.okButton.container);
+    this.okButton.container.interactive = true;
+    this.okButton.container.on('pointerdown', function() {
+      if (SFXOn) {
+        confirmSound.play();
+      }
+      optionsScreen.container.visible = false;
+    });
+    this.invisibleToggle = new ToggleBar(
+      this,
+      blockSize * 1.5,
+      this.okButton.container.y - this.elementYSpace * 1.1,
+      this.elementWidth,
+      this.elementHeight * 0.9,
+      'GAME BOY STYLE',
+      'ON',
+      'OFF',
+      function() {
+        skin = 'GB';
+        pieceBG.tint = 0xf8f8f8;
+      },
+      function() {
+        skin = 'NES';
+        pieceBG.tint = 0x000000;
+      },
+      skin === 'GB'
+    );
+    this.container.addChild(this.invisibleToggle.container);
+    // this.invisibleToggle.labelText.tint = 0xff3333
+    if (forcedFallRate === 0) {
+      this.speedText.text = 'INSTANT';
+    }
+    if (forcedFallRate === 1) {
+      this.speedText.text = 'QUICK';
+    }
+    if (forcedFallRate === 2) {
+      this.speedText.text = 'NORMAL';
+    }
+  
+    if (this.invisibleToggle.labelText.width >= this.bg.width / 4) {
+      this.invisibleToggle.labelText.text = 'GAME BOY\rSTYLE';
+      this.invisibleToggle.labelText.y -=
+        this.invisibleToggle.labelText.height / 4;
+    }
+    this.invisibleToggle.backing.tint = 0x101010;
+  
+    stage.addChildAt(this.container, stage.children.length);
+    // this.container.visible = false;
+  }
+  
+  function PauseScreen() {
+    this.container = new PIXI.Container();
+    this.container.pivot.x = titleScreen.container.pivot.x;
+    this.container.pivot.y = titleScreen.container.pivot.y;
+    this.bg = new PIXI.Sprite(pixelText);
+    this.bg.tint = 0x000000;
+    this.bg.alpha = 0.8;
+    this.bg.width = titleScreen.bg.width * 0.8;
+    this.bg.height = titleScreen.bg.height * 0.8;
+    this.container.x = titleScreen.container.x + titleScreen.bg.width * 0.1;
+    this.container.y = titleScreen.container.y + titleScreen.bg.height * 0.1;
+  
+    this.elementWidth = this.bg.width - blockSize * 3;
+    this.elementHeight = this.bg.height / 13;
+    this.elementYSpace = this.elementHeight * 1.2;
+  
+    this.container.addChild(this.bg);
+    if (this.bg.width < miniBlockSize * 40) {
+      optionTextSize = miniBlockSize * 0.7;
+    } else {
+      optionTextSize = miniBlockSize;
+    }
+    this.border = new Border(
+      borders['fancy'],
+      mainBorderThickness,
+      this,
+      this.bg.width,
+      this.bg.height,
+      0,
+      0
+    );
+    this.headerTextStyle = {
+      fontFamily: 'Press Start 2P',
+      fontSize: optionTextSize + 'px',
+      fill: '#99ddff',
+      leading: miniBlockSize / 2
+      // stroke : "#333333",
+      // strokeThickness : 2
+    };
+    this.onOffTextStyle = {
+      fontFamily: 'Press Start 2P',
+      fontSize: optionTextSize * 0.95 + 'px',
+      fill: '#ffffff'
+  
+      // align:'center',
+      // stroke : "#000000",
+      // strokeThickness : 1
+    };
+    this.startStyle = {
+      fontFamily: 'Press Start 2P',
+      fontSize: blockSize * 0.8 + 'px',
+      fill: '#ffffff'
+      // stroke : "#000000",
+      // strokeThickness : 1
+    };
+  
+    var yGap = blockSize;
+    var ySpace = this.bg.height - mainBorderThickness * 2 - yGap * 4;
+    var itemHeight = ySpace / 3;
+  
+    this.header = new TextButton(
+      this,
+      'PAUSED',
+      'yellow',
+      1,
+      this.startStyle,
+      blockSize,
+      miniBlockSize * 0.1
+    );
+    this.header.container.x = this.bg.width / 2 - this.header.container.width / 2;
+    this.header.container.y = mainBorderThickness;
+    this.header.border.container.visible = false;
+  
+    this.resumeButton = new TextButton(
+      this,
+      'RESUME',
+      'fancy',
+      1,
+      this.startStyle,
+      blockSize * 2.25,
+      miniBlockSize
+    );
+    this.resumeButton.container.x =
+      this.bg.width / 2 - this.resumeButton.container.width / 2;
+    this.resumeButton.container.y =
+      this.header.container.y + this.header.container.height * 1.5;
+  
+    this.optionsButton = new TextButton(
+      this,
+      'OPTIONS',
+      'yellow',
+      1,
+      this.startStyle,
+      blockSize * 2.25,
+      miniBlockSize
+    );
+    this.optionsButton.container.x =
+      this.bg.width / 2 - this.optionsButton.container.width / 2;
+    this.optionsButton.container.y =
+      this.resumeButton.container.y +
+      this.resumeButton.container.height +
+      itemHeight / 3;
+  
+    this.quitButton = new TextButton(
+      this,
+      'QUIT',
+      'red',
+      1,
+      this.startStyle,
+      blockSize * 2.25,
+      miniBlockSize
+    );
+    this.quitButton.container.x =
+      this.bg.width / 2 - this.quitButton.container.width / 2;
+    this.quitButton.container.y =
+      this.optionsButton.container.y +
+      this.optionsButton.container.height +
+      itemHeight / 3;
+  
+    this.resumeButton.container.interactive = this.optionsButton.container.interactive = this.quitButton.container.interactive = true;
+  
+    this.resumeButton.container.on('pointerdown', function() {
+      if (!optionsScreen.container.visible) {
+        pauseScreen.container.visible = false;
+        started = true;
+      }
+    });
+    this.optionsButton.container.on('pointerdown', function() {
+      optionsScreen.container.visible = true;
+    });
+    this.quitButton.container.on('pointerdown', function() {
+      if (!optionsScreen.container.visible) {
+        pauseScreen.container.visible = false;
+        resetToTitle();
+      }
+    });
+  
+    stage.addChild(this.container);
+    this.container.visible = false;
+  }
